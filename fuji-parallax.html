@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fuji View — Parallax</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ---------- FIXED PARALLAX LAYERS ---------- */
+
+  .layer {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    will-change: transform;
+    pointer-events: none;
+  }
+
+  /* Layer 1: Sky */
+  #sky {
+    background: linear-gradient(180deg, #FFB199 0%, #FFD3A5 35%, #FDEBD3 65%, #F6E7D8 100%);
+    z-index: 1;
+  }
+
+  /* Layer 2: Sun */
+  #sun {
+    z-index: 2;
+  }
+  #sun .disc {
+    position: absolute;
+    top: 12%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FFF4D6 0%, #FFD97D 60%, rgba(255,217,125,0) 75%);
+    box-shadow: 0 0 80px 30px rgba(255, 217, 125, 0.5);
+  }
+
+  /* Layer 3: Far clouds */
+  #far-clouds { z-index: 3; }
+  .cloud {
+    position: absolute;
+    background: #fff;
+    border-radius: 50px;
+    opacity: 0.75;
+  }
+  #far-clouds .cloud1 { width: 160px; height: 40px; top: 15%; left: 8%; }
+  #far-clouds .cloud2 { width: 110px; height: 30px; top: 22%; left: 68%; }
+  #far-clouds .cloud3 { width: 90px; height: 26px; top: 10%; left: 45%; opacity: 0.5; }
+
+  /* Layer 4: Distant hills */
+  #hills {
+    z-index: 4;
+  }
+  #hills .hill {
+    position: absolute;
+    bottom: 32%;
+    width: 60%;
+    height: 140px;
+    background: #C9B8D8;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    opacity: 0.55;
+  }
+  #hills .hill1 { left: -10%; }
+  #hills .hill2 { left: 40%; width: 70%; height: 110px; opacity: 0.4; }
+
+  /* Layer 5: Mount Fuji */
+  #fuji { z-index: 5; }
+  #fuji .mountain {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 340px solid transparent;
+    border-right: 340px solid transparent;
+    border-bottom: 300px solid #7D8BA6;
+  }
+  #fuji .snowcap {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 90px solid transparent;
+    border-right: 90px solid transparent;
+    border-bottom: 90px solid #FDFBF7;
+  }
+  #fuji .snowcap::before,
+  #fuji .snowcap::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    width: 0;
+    height: 0;
+    border-bottom: 40px solid #FDFBF7;
+  }
+  #fuji .snowcap::before {
+    left: -70px;
+    border-left: 28px solid transparent;
+    border-right: 45px solid transparent;
+  }
+  #fuji .snowcap::after {
+    right: -70px;
+    border-right: 28px solid transparent;
+    border-left: 45px solid transparent;
+  }
+
+  /* Layer 6: Near clouds */
+  #near-clouds { z-index: 6; }
+  #near-clouds .cloud1 { width: 200px; height: 55px; top: 30%; left: 5%; opacity: 0.9; }
+  #near-clouds .cloud2 { width: 150px; height: 42px; top: 38%; left: 72%; opacity: 0.85; }
+
+  /* Layer 7: Birds */
+  #birds { z-index: 7; }
+  .bird {
+    position: absolute;
+    width: 24px;
+    height: 12px;
+  }
+  .bird::before, .bird::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 3px;
+    background: #4A4458;
+    border-radius: 3px;
+    top: 4px;
+  }
+  .bird::before { left: 0; transform: rotate(25deg); }
+  .bird::after { right: 0; transform: rotate(-25deg); }
+  #birds .b1 { top: 18%; left: 20%; }
+  #birds .b2 { top: 24%; left: 26%; transform: scale(0.7); }
+  #birds .b3 { top: 20%; left: 75%; transform: scale(0.8); }
+
+  /* Layer 8: Foreground tree silhouettes */
+  #trees { z-index: 8; }
+  .tree {
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+  }
+  .tree-l {
+    left: -5%;
+    border-left: 90px solid transparent;
+    border-right: 90px solid transparent;
+    border-bottom: 260px solid #3B4A3A;
+  }
+  .tree-r {
+    right: -5%;
+    border-left: 110px solid transparent;
+    border-right: 110px solid transparent;
+    border-bottom: 300px solid #2E3B2D;
+  }
+
+  /* Layer 9: Road + ground */
+  #ground { z-index: 9; }
+  #ground .grass {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 22%;
+    background: #4E6B4C;
+  }
+  #ground .road {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 42%;
+    height: 22%;
+    background: #4A4A52;
+  }
+  #ground .roadline {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 100%;
+    background: repeating-linear-gradient(180deg, #F5F1E8 0px, #F5F1E8 22px, transparent 22px, transparent 44px);
+  }
+
+  /* Layer 10: The store (closest layer, moves fastest) */
+  #store { z-index: 10; }
+  #store .building {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+    height: 190px;
+    background: #F7F5F0;
+    border: 3px solid #2A2A2F;
+  }
+  #store .stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 22px;
+    background: repeating-linear-gradient(
+      90deg,
+      #E8442E 0, #E8442E 20px,
+      #F5F1E8 20px, #F5F1E8 24px,
+      #1E7A46 24px, #1E7A46 44px,
+      #F5F1E8 44px, #F5F1E8 48px
+    );
+  }
+  #store .sign {
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #E8442E;
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 0.06em;
+    padding: 6px 22px;
+    border-radius: 3px;
+  }
+  #store .window {
+    position: absolute;
+    bottom: 0;
+    left: 8%;
+    width: 84%;
+    height: 90px;
+    background: linear-gradient(180deg, #BFE4F0, #E8F6FA);
+    border-top: 3px solid #2A2A2F;
+  }
+  #store .door {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 90px;
+    background: #DCEFF5;
+    border: 3px solid #2A2A2F;
+    border-bottom: none;
+  }
+  #store .open247 {
+    position: absolute;
+    top: 66px;
+    left: 12%;
+    background: #1E7A46;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 6px;
+    border-radius: 2px;
+  }
+  #store .awning {
+    position: absolute;
+    top: 22px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: 14px;
+    background: repeating-linear-gradient(90deg, #E8442E 0 16px, #F5F1E8 16px 32px);
+  }
+
+  /* ---------- SCROLLING CONTENT ---------- */
+
+  .content {
+    position: relative;
+    z-index: 20;
+  }
+
+  .spacer {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .spacer .box {
+    background: rgba(27,27,30,0.55);
+    backdrop-filter: blur(4px);
+    color: #F5F1E8;
+    padding: 28px 32px;
+    border-radius: 6px;
+    max-width: 480px;
+  }
+
+  .spacer h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+  }
+
+  .spacer p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #E4E1DA;
+  }
+
+  .spacer .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    color: #FFB199;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  #hero { align-items: flex-start; padding-top: 12vh; }
+  #hero .box { margin: 0 auto; }
+
+  #end {
+    background: #1B1B1E;
+    color: #F5F1E8;
+  }
+  #end .box { background: transparent; }
+</style>
+</head>
+<body>
+
+  <!-- Fixed parallax layers, back to front -->
+  <div class="layer" id="sky" data-speed="0.1"></div>
+
+  <div class="layer" id="sun" data-speed="0.15">
+    <div class="disc"></div>
+  </div>
+
+  <div class="layer" id="far-clouds" data-speed="0.2">
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+    <div class="cloud cloud3"></div>
+  </div>
+
+  <div class="layer" id="hills" data-speed="0.3">
+    <div class="hill hill1"></div>
+    <div class="hill hill2"></div>
+  </div>
+
+  <div class="layer" id="fuji" data-speed="0.4">
+    <div class="mountain"></div>
+    <div class="snowcap"></div>
+  </div>
+
+  <div class="layer" id="near-clouds" data-speed="0.5">
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+  </div>
+
+  <div class="layer" id="birds" data-speed="0.6">
+    <div class="bird b1"></div>
+    <div class="bird b2"></div>
+    <div class="bird b3"></div>
+  </div>
+
+  <div class="layer" id="trees" data-speed="0.7">
+    <div class="tree tree-l"></div>
+    <div class="tree tree-r"></div>
+  </div>
+
+  <div class="layer" id="ground" data-speed="0.85">
+    <div class="grass"></div>
+    <div class="road"></div>
+    <div class="roadline"></div>
+  </div>
+
+  <div class="layer" id="store" data-speed="1">
+    <div class="building">
+      <div class="stripe"></div>
+      <div class="awning"></div>
+      <div class="sign">7-ELEVEN</div>
+      <div class="open247">OPEN 24H</div>
+      <div class="window"></div>
+      <div class="door"></div>
+    </div>
+  </div>
+
+  <!-- Scrollable content sitting on top of the fixed layers -->
+  <div class="content">
+    <section class="spacer" id="hero">
+      <div class="box">
+        <div class="eyebrow">SHIZUOKA, JAPAN</div>
+        <h1>Fuji View Konbini</h1>
+        <p>One mountain. One store. Open every hour of every day. Scroll down.</p>
+      </div>
+    </section>
+
+    <section class="spacer">
+      <div class="box">
+        <div class="eyebrow">THE VIEW</div>
+        <p>Locals say the mountain hasn't moved in ten thousand years. The store has been here for thirty of them — same fridge hum, same sliding doors, same view out the front window every single morning.</p>
+      </div>
+    </section>
+
+    <section class="spacer">
+      <div class="box">
+        <div class="eyebrow">THE ROUTINE</div>
+        <p>Rice balls at dawn, coffee at noon, a slow sunset over the ridgeline. Keep scrolling and the mountain gets closer — the store gets closer faster.</p>
+      </div>
+    </section>
+
+    <section class="spacer" id="end">
+      <div class="box">
+        <div class="eyebrow">THANKS FOR SCROLLING</div>
+        <h1 style="font-size:38px;">See you at the counter.</h1>
+      </div>
+    </section>
+  </div>
+
+<script>
+  const layers = document.querySelectorAll('.layer');
+
+  function updateParallax() {
+    const scrollY = window.scrollY;
+    layers.forEach(layer => {
+      const speed = parseFloat(layer.getAttribute('data-speed'));
+      const offset = scrollY * speed * 0.5;
+      layer.style.transform = 'translateY(' + (-offset) + 'px)';
+    });
+  }
+
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateParallax();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+
+  updateParallax();
+</script>
+
+</body>
+</html>
